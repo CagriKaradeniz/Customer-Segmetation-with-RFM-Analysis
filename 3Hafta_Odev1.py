@@ -7,15 +7,15 @@ pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 pd.set_option('display.float_format', lambda x: '%.5f' % x)
 
-#Görev 1
 
-#Soru1:Online Retail II excelindeki 2010-2011 verisini okuyunuz. Oluşturduğunuz dataframe’in kopyasını oluşturunuz.
+
+#Loading dataset
 
 df_=pd.read_excel("online_retail_II.xlsx",sheet_name="Year 2010-2011")
 data=df_.copy()
 data.head()
 
-#Soru2:Veri setinin betimsel istatistiklerini inceleyiniz.
+#Data set first analysis
 data.shape
 data.head()
 data.tail()
@@ -23,30 +23,24 @@ data.describe().T
 
 util.dataset_ozet(data)
 
-#Soru3:Veri setinde eksik gözlem var mı? Varsa hangi değişkende kaç tane eksik gözlem vardır?
+#Null Value control and drop
 util.dataset_ozet(data)
 data.isnull().sum()
-
-#Soru4:Eksik gözlemleri veri setinden çıkartınız. Çıkarma işleminde ‘inplace=True’ parametresini kullanınız.
-
 data.dropna(inplace=True)
 data.shape
 data.isnull().sum()
 
-#Soru5:Eşsiz ürün sayısı kaçtır?
+#Unique Product number
 
 data.Description.nunique()
-print(f"Eşsiz ürün sayısı: {data.Description.nunique()}")
-
-#Soru6:Hangi üründen kaçar tane vardır?
-
+print(f"Unique Product number : {data.Description.nunique()}")
 data.Description.value_counts()
 
-#Soru7:En çok sipariş edilen 5 ürünü çoktan aza doğru sıralayınız.
+#Most popular products
 
 data.groupby("Description")["Quantity"].sum().sort_values(ascending=False).head(5)
 
-#Soru8:Faturalardaki ‘C’ iptal edilen işlemleri göstermektedir. İptal edilen işlemleri veri setinden çıkartınız.
+#Drop cancaled invoices
 data.shape
 data=data[~data["Invoice"].str.contains("C",na=False)]
 data.shape
@@ -55,9 +49,7 @@ data["TotalPrice"]=data["Quantity"]*data["Price"]
 data.head()
 util.dataset_ozet(data)
 
-#Görev 2
-#RFM metriklerinin hesaplanması
-#Recency, Frequency ve Monetary tanımlarını yapınız.
+#RFM Parameters Recency, Frequency ve Monetary.
 
 today=dt.datetime(2011,12,11)
 rfm=data.groupby("Customer ID").agg({"Invoice":lambda x: x.nunique() ,
@@ -71,8 +63,7 @@ rfm.shape
 rfm=rfm[rfm["Monetary"]>0]
 rfm.shape
 
-#GÖREV 3
-#RFM skorlarının oluşturulması ve tek bir değişkene çevrilmesi
+#Creating RFM Score parameters
 
 rfm["Frequency_Score"]=pd.qcut(rfm["Frequency"].rank(method="first"),5,labels=[1,2,3,4,5])
 rfm["Recency_Score"]=pd.qcut(rfm["Recency"],5,labels=[5,4,3,2,1])
@@ -81,8 +72,8 @@ rfm.head()
 rfm["RFM_Score"]=rfm.Recency_Score.astype(str)+rfm.Frequency_Score.astype(str)
 
 
-#GÖREV 4
-#RFM skorlarının segment olarak tanımlanması
+
+#Split segments according to RFM Score parameters
 
 seg_map = {
     r'[1-2][1-2]': 'hibernating',
@@ -99,33 +90,12 @@ seg_map = {
 rfm["Segment_Class"]=rfm["RFM_Score"].replace(seg_map,regex=True)
 rfm.head()
 
-#GÖREV 5
-#Önemli bulduğunuz 3 segmenti seçiniz. Bu üç segmenti;
-# Hem aksiyon kararları açısından,
-# Hem de segmentlerin yapısı açısından (ortalama RFM değerleri) yorumlayınız.
-#"Loyal Customers" sınıfına ait customer ID'leri seçerek excel çıktısını alınız.
 
-cıktı=rfm[rfm["Segment_Class"]=="loyal_customers"]
-cıktı.to_excel("Loyal_Customers.xlsx",sheet_name="Hafta3_Odev1_Görev5")
-
+#FINAL
+#Analysis of each segments
 util.categoric_ozet(rfm,"Segment_Class",True,True)
-
-#Bu tabloya göre müşterilerin %57'lik kesimini hibernating loyal customers ve champions sınıfı oluşturuyor.
-
 rfm.groupby("Segment_Class")[["Recency","Frequency","Monetary"]].agg(["mean","sum"])
 karsilastirma_tablo=rfm.groupby("Segment_Class")[["Recency","Frequency","Monetary"]].agg(["mean","sum"])
 
-#Bu tabloya baktığımızda ise ortalama en fazla gelir sağlanan 3 grup champions, loyal customers ve can't loose sınıfı.
-#Aynı zamanda tabloyu incelediğimizde alış veriş sıklığında  ilk 3 grup sırasıyla champions ,can't loose ve loyal customers.
-#Tabloda REcency bakımından en kötü 3 grup sırasıyla hibernating,at_Risk ve can't loose
 
-
-#SONUÇ Yorumum: MEvcut müşteri ve fiyat politikalarına göre Champions ve loyal_customers sınıflarının çok sık alış veriş yaptığı
-# ve ortalama kazancın yüksek olduğu görülüyor. Şirketin daha çok kazanç sağlması için bu iki sınıf hacminin büyümesi gerekmektedir.
-#can't loose grubunun ortalama kazanç değeri çok yüksek fakat son alış veriş tarihleri çok eskide kalmış. Bu grubu analiz ederek,
-#bu müşteri grubuna özel kampanyalar sağlanarak müşteriler geri kazanılabilir ve bu sınıfı champions sınıfına kaydırabiliriz.
-#Potential_loyallist grubunun ise alışveriş frekans sıklığını artırarak bu sınıfı loyal customers sınıfına kaydırabiliriz.
-#Bu gruba uygun analiz yapılması ve bu grubun tercih ettiği ürünlerin çeşitlendirilmesi ve indirimler yapılması sağlanmalıdır.
-#Son olarak at_Risk grubunun  ortalama kazancı ve frekansı hatrı sayılır seviyelerde. Son alışveriş zamanları hayli eski.
-#Bu gruplara gerekirse iletişim bilgileri ile ulaşılıp hediye çekleri verilerek tekrar sisteme kazandırılması gerekiyor.
 
