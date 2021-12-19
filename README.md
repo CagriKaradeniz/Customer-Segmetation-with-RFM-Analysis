@@ -5,6 +5,28 @@ RFM analysis of an e-commerce company's customers
 # Business Problem
 An e-commerce company wants to split segments its customers and plan to determine marketing strategies according to these segments.
 Detirmined Customer segments with common behaviors will Income increase by doing marketing studies in particular thinks it will.
+Customer Segments:	
+
+CHAMPIONS:	Bought recently, buy often and spend the most!
+
+LOYAL CUSTOMERS:	Spend good money with us often. 
+
+POTENTIAL LOYAL:	Recent customers, but spent a good amount and bought more than once.
+
+NEW CUSTOMERS:	Bought most recently, but not often.
+
+PROMISSING:	Recent shoppers, but haven’t spent much.
+
+NEED ATTENTION:	Above average recency, frequency and monetary values.
+
+ABOUT TO SLEEP:	Below average recency, frequency and monetary values. 
+
+AT RISK:	Spent big money and purchased often. But long time ago. 
+
+CAN'T LOOSE: Them	Made biggest purchases, and often. But haven’t returned for a long time.
+
+HIBERNATING:	Last purchase was long back, low spenders and low number of orders.
+
 
 # Dataset
 Excel dataset includes some this e-commerce company's customers information in 2010-2011.
